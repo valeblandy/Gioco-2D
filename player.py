@@ -19,11 +19,16 @@ JUMP_COLS = 4
 DURATA_IDLE = 0.8
 DURATA_WALK = 0.6
 DURATA_RUN  = 0.4
-DURATA_JUMP = 0.4
+DURATA_JUMP = 0.9   # durata salita (i frame vengono "allungati")
 
 # Velocità
 SPEED_WALK = 2.5
 SPEED_RUN  = 5.0
+
+# Fisica salto
+JUMP_VELOCITY   = 380   # px/s verso l'alto al momento del salto
+GRAVITY         = 700   # px/s² di gravità
+JUMP_HOLD_TIME  = 0.25  # secondi di pausa sull'ultimo frame (apice del salto)
 
 # Mappa
 MAP_WIDTH  = 2000
@@ -76,13 +81,17 @@ class Player(SpriteAnimato):
         self.key_corsa    = False
         self.sta_saltando = False
 
+        # Fisica salto
+        self._vel_y      = 0.0   # velocità verticale attuale (px/s)
+        self._base_y     = 0.0   # posizione Y a terra
+        self._offset_y   = 0.0   # offset visivo corrente
+        self._hold_timer = 0.0   # pausa sull'ultimo frame
+
     def update_animation(self, delta_time=1/60):
         if not self.sta_saltando:
             moving = self.key_su or self.key_giu or self.key_sinistra or self.key_destra
             prefisso = ("run" if self.key_corsa else "walk") if moving else "idle"
             self.imposta_animazione(f"{prefisso}_{self.direzione}")
-        if self.sta_saltando and self.animazione_corrente != f"jump_{self.direzione}":
-            self.sta_saltando = False
         super().update_animation(delta_time)
 
     def aggiorna_posizione(self, delta_time: float):
@@ -102,6 +111,36 @@ class Player(SpriteAnimato):
         self.center_x += dx * speed
         self.center_y += dy * speed
 
+        # ── Fisica salto ──────────────────────────────────────────────────────
+        if self.sta_saltando:
+            anim = self.animazioni.get(f"jump_{self.direzione}")
+            ultimo_frame = (anim and
+                            self.indice_frame == len(anim["textures"]) - 1 and
+                            not anim["loop"])
+
+            if ultimo_frame:
+                # Pausa sull'apice: aspetta JUMP_HOLD_TIME secondi
+                if self._hold_timer < JUMP_HOLD_TIME:
+                    self._hold_timer += delta_time
+                    self.tempo_frame = 0  # congela il frame corrente
+                else:
+                    # Fine hold: ricomincia la discesa con gravità
+                    self._vel_y -= GRAVITY * delta_time
+            else:
+                self._vel_y -= GRAVITY * delta_time
+
+            self._offset_y += self._vel_y * delta_time
+            self.center_y  = self._base_y + self._offset_y
+
+            # Atterraggio
+            if self._offset_y <= 0:
+                self._offset_y   = 0
+                self._vel_y      = 0.0
+                self._hold_timer = 0.0
+                self.sta_saltando = False
+                self.center_y    = self._base_y
+        # ─────────────────────────────────────────────────────────────────────
+
         hw = self.width  / 2
         hh = self.height / 2
         self.center_x = max(hw, min(MAP_WIDTH  - hw, self.center_x))
@@ -115,6 +154,10 @@ class Player(SpriteAnimato):
         if key == arcade.key.LSHIFT:                self.key_corsa    = True
         if key == arcade.key.SPACE and not self.sta_saltando:
             self.sta_saltando = True
+            self._base_y      = self.center_y
+            self._vel_y       = JUMP_VELOCITY
+            self._offset_y    = 0.0
+            self._hold_timer  = 0.0
             self.imposta_animazione(f"jump_{self.direzione}")
 
     def on_key_release(self, key):
@@ -131,7 +174,7 @@ class GameWindow(arcade.Window):
     def __init__(self):
         super().__init__(SCREEN_W, SCREEN_H,
                          "Demo – WASD muovi | SHIFT corri | SPAZIO salta")
-        arcade.set_background_color(arcade.color.DARK_BLUE_GRAY)
+        arcade.set_background_color(arcade.color.AMAZON)
         self.player      = None
         self.sprite_list = None
 

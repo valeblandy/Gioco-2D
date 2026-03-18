@@ -77,7 +77,8 @@ class SpriteAnimato(arcade.Sprite):
         elif anim["loop"]:
             self.indice_frame = 0
         else:
-            self._vai(self.animazione_default)
+            # Rimani sull'ultimo frame; il chiamante decide quando cambiare
+            self.indice_frame = len(anim["textures"]) - 1
             return
 
         self.texture = anim["textures"][self.indice_frame]
