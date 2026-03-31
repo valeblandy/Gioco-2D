@@ -30,9 +30,15 @@ JUMP_VELOCITY   = 380   # px/s verso l'alto al momento del salto
 GRAVITY         = 700   # px/s² di gravità
 JUMP_HOLD_TIME  = 0.25  # secondi di pausa sull'ultimo frame (apice del salto)
 
-# Mappa
-MAP_WIDTH  = 2000
-MAP_HEIGHT = 1500
+# Mappa Tiled
+MAP_FILE   = "Mondo.tmx"
+TILE_SIZE  = 16          # px per tile (come nel .tmx)
+MAP_TILES_W = 200        # colonne della mappa
+MAP_TILES_H = 200        # righe della mappa
+TILE_SCALE  = 1.0        # scala di rendering dei tile (aumenta per pixel art più grande)
+
+MAP_WIDTH  = MAP_TILES_W * TILE_SIZE * TILE_SCALE
+MAP_HEIGHT = MAP_TILES_H * TILE_SIZE * TILE_SCALE
 
 # Schermo
 SCREEN_W = 800
@@ -82,10 +88,10 @@ class Player(SpriteAnimato):
         self.sta_saltando = False
 
         # Fisica salto
-        self._vel_y      = 0.0   # velocità verticale attuale (px/s)
-        self._base_y     = 0.0   # posizione Y a terra
-        self._offset_y   = 0.0   # offset visivo corrente
-        self._hold_timer = 0.0   # pausa sull'ultimo frame
+        self._vel_y      = 0.0
+        self._base_y     = 0.0
+        self._offset_y   = 0.0
+        self._hold_timer = 0.0
 
     def update_animation(self, delta_time=1/60):
         if not self.sta_saltando:
@@ -119,12 +125,10 @@ class Player(SpriteAnimato):
                             not anim["loop"])
 
             if ultimo_frame:
-                # Pausa sull'apice: aspetta JUMP_HOLD_TIME secondi
                 if self._hold_timer < JUMP_HOLD_TIME:
                     self._hold_timer += delta_time
-                    self.tempo_frame = 0  # congela il frame corrente
+                    self.tempo_frame = 0
                 else:
-                    # Fine hold: ricomincia la discesa con gravità
                     self._vel_y -= GRAVITY * delta_time
             else:
                 self._vel_y -= GRAVITY * delta_time
@@ -132,7 +136,6 @@ class Player(SpriteAnimato):
             self._offset_y += self._vel_y * delta_time
             self.center_y  = self._base_y + self._offset_y
 
-            # Atterraggio
             if self._offset_y <= 0:
                 self._offset_y   = 0
                 self._vel_y      = 0.0
@@ -175,8 +178,10 @@ class GameWindow(arcade.Window):
         super().__init__(SCREEN_W, SCREEN_H,
                          "Demo – WASD muovi | SHIFT corri | SPAZIO salta")
         arcade.set_background_color(arcade.color.AMAZON)
-        self.player      = None
-        self.sprite_list = None
+        self.player        = None
+        self.sprite_list   = None
+        self.tile_map      = None   # tilemap caricata da Mondo.tmx
+        self.scene         = None   # arcade.Scene costruita dalla tilemap
 
         try:
             self.cam_world = arcade.camera.Camera2D()
@@ -188,10 +193,15 @@ class GameWindow(arcade.Window):
             self._a3 = False
 
     def setup(self):
+        # ── Carica la tilemap Tiled ──────────────────────────────────────────
+        self.tile_map = arcade.load_tilemap(MAP_FILE, scaling=TILE_SCALE)
+        self.scene    = arcade.Scene.from_tilemap(self.tile_map)
+
+        # ── Player ──────────────────────────────────────────────────────────
         self.sprite_list = arcade.SpriteList()
         self.player = Player()
-        self.player.center_x = MAP_WIDTH  // 2
-        self.player.center_y = MAP_HEIGHT // 2
+        self.player.center_x = MAP_WIDTH  / 2
+        self.player.center_y = MAP_HEIGHT / 2
         self.sprite_list.append(self.player)
 
     def _aggiorna_camera(self):
@@ -216,6 +226,11 @@ class GameWindow(arcade.Window):
     def on_draw(self):
         self.clear()
         self.cam_world.use()
+
+        # Disegna i layer della tilemap
+        self.scene.draw()
+
+        # Disegna il player sopra la mappa
         self.sprite_list.draw()
 
         self.cam_gui.use()
