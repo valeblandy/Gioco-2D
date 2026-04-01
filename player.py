@@ -1,12 +1,12 @@
 import arcade
+import os
 from sprite_animato import SpriteAnimato
 
 # ── Spritesheet ───────────────────────────────────────────────────────────────
-# Ordine righe in tutti i file: su / sinistra / giù / destra
-IDLE_SOURCE = "idle.png"   # 4 righe × 2 colonne, 64×64 px
-WALK_SOURCE = "walk.png"   # 4 righe × 7 colonne, 64×64 px
-RUN_SOURCE  = "run.png"    # 4 righe × 6 colonne, 64×64 px
-JUMP_SOURCE = "jump.png"   # 4 righe × 4 colonne, 64×64 px
+IDLE_SOURCE = "idle.png"
+WALK_SOURCE = "walk.png"
+RUN_SOURCE  = "run.png"
+JUMP_SOURCE = "jump.png"
 
 FRAME_W = 64
 FRAME_H = 64
@@ -19,26 +19,29 @@ JUMP_COLS = 4
 DURATA_IDLE = 0.8
 DURATA_WALK = 0.6
 DURATA_RUN  = 0.4
-DURATA_JUMP = 0.9   # durata salita (i frame vengono "allungati")
+DURATA_JUMP = 0.9
 
 # Velocità
 SPEED_WALK = 2.5
 SPEED_RUN  = 5.0
 
 # Fisica salto
-JUMP_VELOCITY   = 380   # px/s verso l'alto al momento del salto
-GRAVITY         = 700   # px/s² di gravità
-JUMP_HOLD_TIME  = 0.25  # secondi di pausa sull'ultimo frame (apice del salto)
+JUMP_VELOCITY   = 380
+GRAVITY         = 700
+JUMP_HOLD_TIME  = 0.25
 
 # Mappa Tiled
-MAP_FILE   = "Mondo.tmx"
-TILE_SIZE  = 16          # px per tile (come nel .tmx)
-MAP_TILES_W = 200        # colonne della mappa
-MAP_TILES_H = 200        # righe della mappa
-TILE_SCALE  = 1.0        # scala di rendering dei tile (aumenta per pixel art più grande)
+MAP_FILE    = os.path.join(os.path.dirname(__file__), "Mondo.tmx")
+TILE_SIZE   = 16
+MAP_TILES_W = 200
+MAP_TILES_H = 200
+TILE_SCALE  = 1.0
 
 MAP_WIDTH  = MAP_TILES_W * TILE_SIZE * TILE_SCALE
 MAP_HEIGHT = MAP_TILES_H * TILE_SIZE * TILE_SCALE
+
+# Nome del layer di collisioni (deve corrispondere al nome in Tiled)
+COLLISION_LAYER = "Blocchi"
 
 # Schermo
 SCREEN_W = 800
@@ -87,7 +90,6 @@ class Player(SpriteAnimato):
         self.key_corsa    = False
         self.sta_saltando = False
 
-        # Fisica salto
         self._vel_y      = 0.0
         self._base_y     = 0.0
         self._offset_y   = 0.0
@@ -101,6 +103,8 @@ class Player(SpriteAnimato):
         super().update_animation(delta_time)
 
     def aggiorna_posizione(self, delta_time: float):
+        # Il movimento orizzontale/verticale è ora gestito dal PhysicsEngineSimple,
+        # qui aggiorniamo solo la direzione e la velocità dello sprite
         speed = SPEED_RUN if self.key_corsa else SPEED_WALK
         dx = dy = 0
         if self.key_su:       dy += 1
@@ -114,8 +118,8 @@ class Player(SpriteAnimato):
             else:
                 self.direzione = "destra" if dx > 0 else "sinistra"
 
-        self.center_x += dx * speed
-        self.center_y += dy * speed
+        self.change_x = dx * speed
+        self.change_y = dy * speed
 
         # ── Fisica salto ──────────────────────────────────────────────────────
         if self.sta_saltando:
@@ -144,6 +148,7 @@ class Player(SpriteAnimato):
                 self.center_y    = self._base_y
         # ─────────────────────────────────────────────────────────────────────
 
+        # Limiti della mappa
         hw = self.width  / 2
         hh = self.height / 2
         self.center_x = max(hw, min(MAP_WIDTH  - hw, self.center_x))
@@ -178,10 +183,11 @@ class GameWindow(arcade.Window):
         super().__init__(SCREEN_W, SCREEN_H,
                          "Demo – WASD muovi | SHIFT corri | SPAZIO salta")
         arcade.set_background_color(arcade.color.AMAZON)
-        self.player        = None
-        self.sprite_list   = None
-        self.tile_map      = None   # tilemap caricata da Mondo.tmx
-        self.scene         = None   # arcade.Scene costruita dalla tilemap
+        self.player          = None
+        self.sprite_list     = None
+        self.tile_map        = None
+        self.scene           = None
+        self.physics_engine  = None   # <-- motore fisico con collisioni
 
         try:
             self.cam_world = arcade.camera.Camera2D()
@@ -193,16 +199,20 @@ class GameWindow(arcade.Window):
             self._a3 = False
 
     def setup(self):
-        # ── Carica la tilemap Tiled ──────────────────────────────────────────
         self.tile_map = arcade.load_tilemap(MAP_FILE, scaling=TILE_SCALE)
         self.scene    = arcade.Scene.from_tilemap(self.tile_map)
 
-        # ── Player ──────────────────────────────────────────────────────────
         self.sprite_list = arcade.SpriteList()
         self.player = Player()
         self.player.center_x = MAP_WIDTH  / 2
         self.player.center_y = MAP_HEIGHT / 2
         self.sprite_list.append(self.player)
+
+        # ── Collisioni con il layer "Blocchi" ────────────────────────────────
+        self.physics_engine = arcade.PhysicsEngineSimple(
+            self.player,
+            self.scene[COLLISION_LAYER]
+        )
 
     def _aggiorna_camera(self):
         px, py = self.player.center_x, self.player.center_y
@@ -226,11 +236,7 @@ class GameWindow(arcade.Window):
     def on_draw(self):
         self.clear()
         self.cam_world.use()
-
-        # Disegna i layer della tilemap
         self.scene.draw()
-
-        # Disegna il player sopra la mappa
         self.sprite_list.draw()
 
         self.cam_gui.use()
@@ -245,6 +251,7 @@ class GameWindow(arcade.Window):
 
     def on_update(self, delta_time: float):
         self.player.aggiorna_posizione(delta_time)
+        self.physics_engine.update()   # gestisce le collisioni con "Blocchi"
         self.sprite_list.update_animation(delta_time)
         self._aggiorna_camera()
 
