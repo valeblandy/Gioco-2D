@@ -40,8 +40,26 @@ TILE_SCALE  = 1.0
 MAP_WIDTH  = MAP_TILES_W * TILE_SIZE * TILE_SCALE
 MAP_HEIGHT = MAP_TILES_H * TILE_SIZE * TILE_SCALE
 
-# Nome del layer di collisioni (deve corrispondere al nome in Tiled)
 COLLISION_LAYER = "Blocchi"
+
+# Scala personaggio: 1.0 = 64px, proporzionato ai tile 16px
+PLAYER_SCALE = 1.0
+
+# ── Ordine di disegno layer ───────────────────────────────────────────────────
+# BACKGROUND_LAYERS → disegnati PRIMA del giocatore (terreno, muri, edifici)
+# FOREGROUND_LAYERS → disegnati DOPO il giocatore (tetti, cime alberi)
+#
+# Come far passare il giocatore DIETRO agli edifici:
+#   1. Apri Mondo.tmx in Tiled
+#   2. Crea un nuovo Tile Layer chiamato "Primo_piano"
+#   3. Prendi le righe di tile che formano la parte SUPERIORE degli edifici
+#      (tetti, cime degli alberi) e spostale in "Primo_piano"
+#   4. Aggiungi "Primo_piano" a FOREGROUND_LAYERS qui sotto, es:
+#      FOREGROUND_LAYERS = ["Primo_piano"]
+#
+# Finché non crei quel layer il giocatore apparirà sempre sopra tutto.
+BACKGROUND_LAYERS = ["Terreno", "Blocchi"]
+FOREGROUND_LAYERS = ["Blocchi2"]   # <- aggiungi il nome del layer di primo piano qui
 
 # Schermo
 SCREEN_W = 800
@@ -52,7 +70,7 @@ class Player(SpriteAnimato):
     DIREZIONI = ["su", "sinistra", "giu", "destra"]
 
     def __init__(self):
-        super().__init__(scala=2.0)
+        super().__init__(scala=PLAYER_SCALE)
 
         for i, d in enumerate(self.DIREZIONI):
             self.aggiungi_animazione(
@@ -103,8 +121,6 @@ class Player(SpriteAnimato):
         super().update_animation(delta_time)
 
     def aggiorna_posizione(self, delta_time: float):
-        # Il movimento orizzontale/verticale è ora gestito dal PhysicsEngineSimple,
-        # qui aggiorniamo solo la direzione e la velocità dello sprite
         speed = SPEED_RUN if self.key_corsa else SPEED_WALK
         dx = dy = 0
         if self.key_su:       dy += 1
@@ -121,7 +137,6 @@ class Player(SpriteAnimato):
         self.change_x = dx * speed
         self.change_y = dy * speed
 
-        # ── Fisica salto ──────────────────────────────────────────────────────
         if self.sta_saltando:
             anim = self.animazioni.get(f"jump_{self.direzione}")
             ultimo_frame = (anim and
@@ -146,9 +161,7 @@ class Player(SpriteAnimato):
                 self._hold_timer = 0.0
                 self.sta_saltando = False
                 self.center_y    = self._base_y
-        # ─────────────────────────────────────────────────────────────────────
 
-        # Limiti della mappa
         hw = self.width  / 2
         hh = self.height / 2
         self.center_x = max(hw, min(MAP_WIDTH  - hw, self.center_x))
@@ -183,11 +196,11 @@ class GameWindow(arcade.Window):
         super().__init__(SCREEN_W, SCREEN_H,
                          "Demo – WASD muovi | SHIFT corri | SPAZIO salta")
         arcade.set_background_color(arcade.color.AMAZON)
-        self.player          = None
-        self.sprite_list     = None
-        self.tile_map        = None
-        self.scene           = None
-        self.physics_engine  = None   # <-- motore fisico con collisioni
+        self.player         = None
+        self.sprite_list    = None
+        self.tile_map       = None
+        self.scene          = None
+        self.physics_engine = None
 
         try:
             self.cam_world = arcade.camera.Camera2D()
@@ -208,7 +221,6 @@ class GameWindow(arcade.Window):
         self.player.center_y = MAP_HEIGHT / 2
         self.sprite_list.append(self.player)
 
-        # ── Collisioni con il layer "Blocchi" ────────────────────────────────
         self.physics_engine = arcade.PhysicsEngineSimple(
             self.player,
             self.scene[COLLISION_LAYER]
@@ -236,8 +248,21 @@ class GameWindow(arcade.Window):
     def on_draw(self):
         self.clear()
         self.cam_world.use()
-        self.scene.draw()
+
+        # 1) Sfondo — disegnato sotto il giocatore
+        for layer_name in BACKGROUND_LAYERS:
+            if layer_name in self.scene._name_mapping:
+                self.scene[layer_name].draw()
+
+        # 2) Giocatore
         self.sprite_list.draw()
+
+        # 3) Primo piano — disegnato SOPRA il giocatore (tetti, cime alberi)
+        #    Attivo solo dopo aver creato il layer in Tiled e aggiunto il nome
+        #    a FOREGROUND_LAYERS
+        for layer_name in FOREGROUND_LAYERS:
+            if layer_name in self.scene._name_mapping:
+                self.scene[layer_name].draw()
 
         self.cam_gui.use()
         arcade.draw_text(
@@ -251,7 +276,7 @@ class GameWindow(arcade.Window):
 
     def on_update(self, delta_time: float):
         self.player.aggiorna_posizione(delta_time)
-        self.physics_engine.update()   # gestisce le collisioni con "Blocchi"
+        self.physics_engine.update()
         self.sprite_list.update_animation(delta_time)
         self._aggiorna_camera()
 
