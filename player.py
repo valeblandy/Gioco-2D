@@ -33,33 +33,31 @@ JUMP_HOLD_TIME  = 0.25
 # Mappa Tiled
 MAP_FILE    = os.path.join(os.path.dirname(__file__), "Mondo.tmx")
 TILE_SIZE   = 16
-MAP_TILES_W = 200
-MAP_TILES_H = 200
-TILE_SCALE  = 1.0
+MAP_TILES_W = 50     # era 200 → nuova mappa è 50×50
+MAP_TILES_H = 50     # era 200
+TILE_SCALE  = 2.0    # era 1.0 → raddoppiato per rendere i tile 32px su schermo
 
-MAP_WIDTH  = MAP_TILES_W * TILE_SIZE * TILE_SCALE
-MAP_HEIGHT = MAP_TILES_H * TILE_SIZE * TILE_SCALE
+MAP_WIDTH  = MAP_TILES_W * TILE_SIZE * TILE_SCALE   # 50 * 16 * 2 = 1600
+MAP_HEIGHT = MAP_TILES_H * TILE_SIZE * TILE_SCALE   # 50 * 16 * 2 = 1600
 
 COLLISION_LAYER = "Blocchi"
 
-# Scala personaggio: 1.0 = 64px, proporzionato ai tile 16px
+# Scala personaggio: adattata al nuovo TILE_SCALE
+# Con TILE_SCALE=2 i tile sono 32px; il player (64px) occupa 2 tile — ok per un top-down
 PLAYER_SCALE = 1.0
 
 # ── Ordine di disegno layer ───────────────────────────────────────────────────
-# BACKGROUND_LAYERS → disegnati PRIMA del giocatore (terreno, muri, edifici)
-# FOREGROUND_LAYERS → disegnati DOPO il giocatore (tetti, cime alberi)
+# Layer presenti nella nuova mappa (Mondo.tmx 50×50):
+#   "Terreno"  → sfondo base (erba, terra)
+#   "Blocchi"  → muri / collisioni
+#   "Blocchi2" → elementi di secondo piano (sopra il giocatore)
+#   "Ponte"    → decorazioni sparse (fiori, rocce, fuochi animati, ecc.)
 #
-# Come far passare il giocatore DIETRO agli edifici:
-#   1. Apri Mondo.tmx in Tiled
-#   2. Crea un nuovo Tile Layer chiamato "Primo_piano"
-#   3. Prendi le righe di tile che formano la parte SUPERIORE degli edifici
-#      (tetti, cime degli alberi) e spostale in "Primo_piano"
-#   4. Aggiungi "Primo_piano" a FOREGROUND_LAYERS qui sotto, es:
-#      FOREGROUND_LAYERS = ["Primo_piano"]
-#
-# Finché non crei quel layer il giocatore apparirà sempre sopra tutto.
-BACKGROUND_LAYERS = ["Terreno", "Blocchi"]
-FOREGROUND_LAYERS = ["Blocchi2"]   # <- aggiungi il nome del layer di primo piano qui
+# "Ponte" contiene oggetti decorativi senza collisione; lo mettiamo in foreground
+# così appare sopra il giocatore (come fogliame, cime alberi, tetti).
+# Se preferisci vederlo sempre sotto il giocatore, spostalo in BACKGROUND_LAYERS.
+BACKGROUND_LAYERS = ["Terreno", "Blocchi", "Ponte"]
+FOREGROUND_LAYERS = ["Blocchi2"]
 
 # Schermo
 SCREEN_W = 800
@@ -217,6 +215,8 @@ class GameWindow(arcade.Window):
 
         self.sprite_list = arcade.SpriteList()
         self.player = Player()
+
+        # Spawn al centro della mappa (coordinate mondo, già scalate)
         self.player.center_x = MAP_WIDTH  / 2
         self.player.center_y = MAP_HEIGHT / 2
         self.sprite_list.append(self.player)
@@ -257,9 +257,9 @@ class GameWindow(arcade.Window):
         # 2) Giocatore
         self.sprite_list.draw()
 
-        # 3) Primo piano — disegnato SOPRA il giocatore (tetti, cime alberi)
-        #    Attivo solo dopo aver creato il layer in Tiled e aggiunto il nome
-        #    a FOREGROUND_LAYERS
+        # 3) Primo piano — disegnato SOPRA il giocatore
+        #    "Blocchi2" → secondo piano originale
+        #    "Ponte"    → decorazioni sparse (fiori, rocce, fuochi, ecc.)
         for layer_name in FOREGROUND_LAYERS:
             if layer_name in self.scene._name_mapping:
                 self.scene[layer_name].draw()
