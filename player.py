@@ -1,12 +1,18 @@
 import arcade
 import os
+import xml.etree.ElementTree as ET
 from sprite_animato import SpriteAnimato
 
+# ── Percorsi base ─────────────────────────────────────────────────────────────
+BASE_DIR     = os.path.dirname(os.path.abspath(__file__))
+SPRITES_DIR  = os.path.join(BASE_DIR, "assets", "sprites")
+MAPS_DIR     = os.path.join(BASE_DIR, "assets", "maps")
+
 # ── Spritesheet ───────────────────────────────────────────────────────────────
-IDLE_SOURCE = "idle.png"
-WALK_SOURCE = "walk.png"
-RUN_SOURCE  = "run.png"
-JUMP_SOURCE = "jump.png"
+IDLE_SOURCE = os.path.join(SPRITES_DIR, "idle.png")
+WALK_SOURCE = os.path.join(SPRITES_DIR, "walk.png")
+RUN_SOURCE  = os.path.join(SPRITES_DIR, "run.png")
+JUMP_SOURCE = os.path.join(SPRITES_DIR, "jump.png")
 
 FRAME_W = 64
 FRAME_H = 64
@@ -21,48 +27,37 @@ DURATA_WALK = 0.6
 DURATA_RUN  = 0.4
 DURATA_JUMP = 0.9
 
-# Velocità
-SPEED_WALK = 2.5
-SPEED_RUN  = 5.0
+# ── Velocità ──────────────────────────────────────────────────────────────────
+SPEED_WALK = 6
+SPEED_RUN  = 8
 
-# Fisica salto
-JUMP_VELOCITY   = 380
-GRAVITY         = 700
-JUMP_HOLD_TIME  = 0.25
+# ── Fisica salto ──────────────────────────────────────────────────────────────
+JUMP_VELOCITY  = 380
+GRAVITY        = 700
+JUMP_HOLD_TIME = 0.25
 
-# Mappa Tiled
-MAP_FILE    = os.path.join(os.path.dirname(__file__), "Mondo.tmx")
-TILE_SIZE   = 16
-MAP_TILES_W = 50     # era 200 → nuova mappa è 50×50
-MAP_TILES_H = 50     # era 200
-TILE_SCALE  = 2.0    # era 1.0 → raddoppiato per rendere i tile 32px su schermo
+# ── Mappe ─────────────────────────────────────────────────────────────────────
+TILE_SIZE  = 16
+TILE_SCALE = 2.0
 
-MAP_WIDTH  = MAP_TILES_W * TILE_SIZE * TILE_SCALE   # 50 * 16 * 2 = 1600
-MAP_HEIGHT = MAP_TILES_H * TILE_SIZE * TILE_SCALE   # 50 * 16 * 2 = 1600
-
-COLLISION_LAYER = "Blocchi"
-
-# Scala personaggio: adattata al nuovo TILE_SCALE
-# Con TILE_SCALE=2 i tile sono 32px; il player (64px) occupa 2 tile — ok per un top-down
-PLAYER_SCALE = 1.0
-
-# ── Ordine di disegno layer ───────────────────────────────────────────────────
-# Layer presenti nella nuova mappa (Mondo.tmx 50×50):
-#   "Terreno"  → sfondo base (erba, terra)
-#   "Blocchi"  → muri / collisioni
-#   "Blocchi2" → elementi di secondo piano (sopra il giocatore)
-#   "Ponte"    → decorazioni sparse (fiori, rocce, fuochi animati, ecc.)
-#
-# "Ponte" contiene oggetti decorativi senza collisione; lo mettiamo in foreground
-# così appare sopra il giocatore (come fogliame, cime alberi, tetti).
-# Se preferisci vederlo sempre sotto il giocatore, spostalo in BACKGROUND_LAYERS.
-BACKGROUND_LAYERS = ["Terreno", "Blocchi", "Ponte"]
+COLLISION_LAYER   = "Blocchi"
+BACKGROUND_LAYERS = ["Terreno", "Ponte"]
+DEPTH_LAYERS      = ["Blocchi"]
 FOREGROUND_LAYERS = ["Blocchi2"]
 
-# Schermo
+MAPS = {
+    "Mondo.tmx":     os.path.join(MAPS_DIR, "Mondo.tmx"),
+    "interior1.tmx": os.path.join(MAPS_DIR, "interior1.tmx"),
+}
+
+PLAYER_SCALE = 1
+
+# ── Schermo ───────────────────────────────────────────────────────────────────
 SCREEN_W = 800
 SCREEN_H = 600
 
+
+# ── Player ────────────────────────────────────────────────────────────────────
 
 class Player(SpriteAnimato):
     DIREZIONI = ["su", "sinistra", "giu", "destra"]
@@ -118,7 +113,7 @@ class Player(SpriteAnimato):
             self.imposta_animazione(f"{prefisso}_{self.direzione}")
         super().update_animation(delta_time)
 
-    def aggiorna_posizione(self, delta_time: float):
+    def aggiorna_posizione(self, delta_time: float, map_width: float, map_height: float):
         speed = SPEED_RUN if self.key_corsa else SPEED_WALK
         dx = dy = 0
         if self.key_su:       dy += 1
@@ -154,16 +149,16 @@ class Player(SpriteAnimato):
             self.center_y  = self._base_y + self._offset_y
 
             if self._offset_y <= 0:
-                self._offset_y   = 0
-                self._vel_y      = 0.0
-                self._hold_timer = 0.0
+                self._offset_y    = 0
+                self._vel_y       = 0.0
+                self._hold_timer  = 0.0
                 self.sta_saltando = False
-                self.center_y    = self._base_y
+                self.center_y     = self._base_y
 
         hw = self.width  / 2
         hh = self.height / 2
-        self.center_x = max(hw, min(MAP_WIDTH  - hw, self.center_x))
-        self.center_y = max(hh, min(MAP_HEIGHT - hh, self.center_y))
+        self.center_x = max(hw, min(map_width  - hw, self.center_x))
+        self.center_y = max(hh, min(map_height - hh, self.center_y))
 
     def on_key_press(self, key):
         if key in (arcade.key.UP,    arcade.key.W): self.key_su       = True
@@ -194,11 +189,18 @@ class GameWindow(arcade.Window):
         super().__init__(SCREEN_W, SCREEN_H,
                          "Demo – WASD muovi | SHIFT corri | SPAZIO salta")
         arcade.set_background_color(arcade.color.AMAZON)
-        self.player         = None
-        self.sprite_list    = None
-        self.tile_map       = None
-        self.scene          = None
-        self.physics_engine = None
+
+        self.player                = None
+        self.sprite_list           = None
+        self.tile_map              = None
+        self.scene                 = None
+        self.physics_engine        = None
+        self.current_map_name      = None
+        self.map_width             = 0.0
+        self.map_height            = 0.0
+        self._porte                = []
+        self._transizione_pendente = None
+        self._cooldown_porta       = 0.0
 
         try:
             self.cam_world = arcade.camera.Camera2D()
@@ -209,64 +211,170 @@ class GameWindow(arcade.Window):
             self.cam_gui   = arcade.Camera(SCREEN_W, SCREEN_H)
             self._a3 = False
 
-    def setup(self):
-        self.tile_map = arcade.load_tilemap(MAP_FILE, scaling=TILE_SCALE)
+    # ── Caricamento mappa ─────────────────────────────────────────────────────
+
+    def setup(self, map_name="Mondo.tmx", spawn_tile_x=None, spawn_tile_y=None):
+        map_path = MAPS[map_name]
+        self.current_map_name = map_name
+
+        root = ET.parse(map_path).getroot()
+        tiles_w = int(root.get("width"))
+        tiles_h = int(root.get("height"))
+        self.map_width  = tiles_w * TILE_SIZE * TILE_SCALE
+        self.map_height = tiles_h * TILE_SIZE * TILE_SCALE
+
+        self.tile_map = arcade.load_tilemap(map_path, scaling=TILE_SCALE)
         self.scene    = arcade.Scene.from_tilemap(self.tile_map)
 
-        self.sprite_list = arcade.SpriteList()
-        self.player = Player()
+        if self.player is None:
+            self.player = Player()
+            self.sprite_list = arcade.SpriteList()
+            self.sprite_list.append(self.player)
 
-        # Spawn al centro della mappa (coordinate mondo, già scalate)
-        self.player.center_x = MAP_WIDTH  / 2
-        self.player.center_y = MAP_HEIGHT / 2
-        self.sprite_list.append(self.player)
+        if spawn_tile_x is not None and spawn_tile_y is not None:
+            self.player.center_x = (spawn_tile_x + 0.5) * TILE_SIZE * TILE_SCALE
+            self.player.center_y = (tiles_h - spawn_tile_y - 0.5) * TILE_SIZE * TILE_SCALE
+        else:
+            self.player.center_x = self.map_width  / 2
+            self.player.center_y = self.map_height / 2
 
-        self.physics_engine = arcade.PhysicsEngineSimple(
-            self.player,
-            self.scene[COLLISION_LAYER]
-        )
+        self.player.change_x     = 0
+        self.player.change_y     = 0
+        self.player.sta_saltando = False
+        self.player._vel_y       = 0.0
+        self.player._offset_y    = 0.0
+
+        muri = arcade.SpriteList(use_spatial_hash=True)
+        if (COLLISION_LAYER in self.scene._name_mapping and
+                "Ponte" in self.scene._name_mapping):
+            posizioni_ponte = {
+                (round(s.center_x), round(s.center_y))
+                for s in self.scene["Ponte"]
+            }
+            for sprite in self.scene[COLLISION_LAYER]:
+                pos = (round(sprite.center_x), round(sprite.center_y))
+                if pos not in posizioni_ponte:
+                    muri.append(sprite)
+        elif COLLISION_LAYER in self.scene._name_mapping:
+            muri = self.scene[COLLISION_LAYER]
+
+        self.physics_engine = arcade.PhysicsEngineSimple(self.player, muri)
+
+        self._porte                = self._leggi_porte(map_path, tiles_h)
+        self._transizione_pendente = None
+        self._cooldown_porta       = 0.0
+
+    # ── Lettura porte dal TMX ─────────────────────────────────────────────────
+
+    def _leggi_porte(self, map_path, tiles_h):
+        porte = []
+        root = ET.parse(map_path).getroot()
+
+        for og in root.findall("objectgroup"):
+            if og.get("name") != "Porte":
+                continue
+
+            layer_props = {}
+            props_el = og.find("properties")
+            if props_el is not None:
+                for p in props_el.findall("property"):
+                    layer_props[p.get("name")] = p.get("value")
+
+            for obj in og.findall("object"):
+                obj_props = dict(layer_props)
+                obj_props_el = obj.find("properties")
+                if obj_props_el is not None:
+                    for p in obj_props_el.findall("property"):
+                        obj_props[p.get("name")] = p.get("value")
+
+                dest = obj_props.get("destinazione", "").strip()
+                if not dest or dest not in MAPS:
+                    continue
+
+                spawn_x = float(obj_props.get("spawn_x", 4))
+                spawn_y = float(obj_props.get("spawn_y", 4))
+
+                ox_tiled = float(obj.get("x", 0))
+                oy_tiled = float(obj.get("y", 0))
+                w_tiled  = float(obj.get("width",  TILE_SIZE))
+                h_tiled  = float(obj.get("height", TILE_SIZE))
+
+                ox = ox_tiled * TILE_SCALE
+                oy = (tiles_h * TILE_SIZE - oy_tiled) * TILE_SCALE
+                w  = w_tiled  * TILE_SCALE
+                h  = h_tiled  * TILE_SCALE
+
+                porte.append({
+                    "left":    ox,
+                    "right":   ox + w,
+                    "bottom":  oy - h,
+                    "top":     oy,
+                    "dest":    dest,
+                    "spawn_x": spawn_x,
+                    "spawn_y": spawn_y,
+                })
+
+        return porte
+
+    # ── Controllo porte ───────────────────────────────────────────────────────
+
+    def _controlla_porte(self):
+        if self._cooldown_porta > 0 or self._transizione_pendente:
+            return
+        px, py = self.player.center_x, self.player.center_y
+        for porta in self._porte:
+            if (porta["left"] <= px <= porta["right"] and
+                    porta["bottom"] <= py <= porta["top"]):
+                self._transizione_pendente = porta
+                return
+
+    # ── Camera ───────────────────────────────────────────────────────────────
 
     def _aggiorna_camera(self):
         px, py = self.player.center_x, self.player.center_y
 
         if self._a3:
-            tx = max(SCREEN_W / 2, min(MAP_WIDTH  - SCREEN_W / 2, px))
-            ty = max(SCREEN_H / 2, min(MAP_HEIGHT - SCREEN_H / 2, py))
+            tx = max(SCREEN_W / 2, min(self.map_width  - SCREEN_W / 2, px))
+            ty = max(SCREEN_H / 2, min(self.map_height - SCREEN_H / 2, py))
             cx, cy = self.cam_world.position
             self.cam_world.position = (
                 cx + (tx - cx) * 0.15,
                 cy + (ty - cy) * 0.15,
             )
         else:
-            tx = max(0, min(MAP_WIDTH  - SCREEN_W, px - SCREEN_W / 2))
-            ty = max(0, min(MAP_HEIGHT - SCREEN_H, py - SCREEN_H / 2))
+            tx = max(0, min(self.map_width  - SCREEN_W, px - SCREEN_W / 2))
+            ty = max(0, min(self.map_height - SCREEN_H, py - SCREEN_H / 2))
             cx, cy = self.cam_world.position
             self.cam_world.move_to(
                 (cx + (tx - cx) * 0.15, cy + (ty - cy) * 0.15)
             )
 
+    # ── Loop ─────────────────────────────────────────────────────────────────
+
     def on_draw(self):
         self.clear()
         self.cam_world.use()
 
-        # 1) Sfondo — disegnato sotto il giocatore
         for layer_name in BACKGROUND_LAYERS:
             if layer_name in self.scene._name_mapping:
                 self.scene[layer_name].draw()
 
-        # 2) Giocatore
-        self.sprite_list.draw()
+        oggetti_depth = []
+        for layer_name in DEPTH_LAYERS:
+            if layer_name in self.scene._name_mapping:
+                oggetti_depth.extend(self.scene[layer_name].sprite_list)
+        oggetti_depth.append(self.player)
+        oggetti_depth.sort(key=lambda s: -s.center_y)
+        for sprite in oggetti_depth:
+            arcade.draw_sprite(sprite)
 
-        # 3) Primo piano — disegnato SOPRA il giocatore
-        #    "Blocchi2" → secondo piano originale
-        #    "Ponte"    → decorazioni sparse (fiori, rocce, fuochi, ecc.)
         for layer_name in FOREGROUND_LAYERS:
             if layer_name in self.scene._name_mapping:
                 self.scene[layer_name].draw()
 
         self.cam_gui.use()
         arcade.draw_text(
-            f"Anim: {self.player.animazione_corrente}",
+            f"Mappa: {self.current_map_name}  |  Anim: {self.player.animazione_corrente}",
             10, SCREEN_H - 24, arcade.color.WHITE, 14,
         )
         arcade.draw_text(
@@ -275,10 +383,25 @@ class GameWindow(arcade.Window):
         )
 
     def on_update(self, delta_time: float):
-        self.player.aggiorna_posizione(delta_time)
+        self._cooldown_porta = max(0.0, self._cooldown_porta - delta_time)
+
+        if self._transizione_pendente:
+            porta = self._transizione_pendente
+            self._transizione_pendente = None
+            self.setup(
+                map_name=porta["dest"],
+                spawn_tile_x=int(porta["spawn_x"]),
+                spawn_tile_y=int(porta["spawn_y"]),
+            )
+            self._cooldown_porta = 1.2
+            return
+
+        self.player.aggiorna_posizione(delta_time, self.map_width, self.map_height)
         self.physics_engine.update()
         self.sprite_list.update_animation(delta_time)
+        self.scene.update_animation(delta_time)
         self._aggiorna_camera()
+        self._controlla_porte()
 
     def on_key_press(self, key, modifiers):
         self.player.on_key_press(key)

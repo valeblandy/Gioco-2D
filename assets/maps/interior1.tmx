@@ -1,0 +1,75 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<map version="1.10" tiledversion="1.12.0" orientation="orthogonal" renderorder="right-down" width="8" height="8" tilewidth="16" tileheight="16" infinite="0" nextlayerid="6" nextobjectid="5">
+ <tileset firstgid="1" source="../tilesets/Pixel 16 v2 village free.tsx"/>
+ <tileset firstgid="290" source="../tilesets/Anvil.tsx"/>
+ <tileset firstgid="292" source="../tilesets/Chest.tsx"/>
+ <tileset firstgid="324" source="../tilesets/Door.tsx"/>
+ <tileset firstgid="334" source="../tilesets/Fence.tsx"/>
+ <tileset firstgid="359" source="../tilesets/Ground.tsx"/>
+ <tileset firstgid="407" source="../tilesets/House.tsx"/>
+ <tileset firstgid="455" source="../tilesets/Interior_build.tsx"/>
+ <tileset firstgid="485" source="../tilesets/Interior_decor.tsx"/>
+ <tileset firstgid="584" source="../tilesets/Rock_hills.tsx"/>
+ <tileset firstgid="620" source="../tilesets/Rocks_and_bush.tsx"/>
+ <tileset firstgid="632" source="../tilesets/Trees.tsx"/>
+ <tileset firstgid="736" source="../tilesets/Water.tsx"/>
+ <tileset firstgid="808" source="../tilesets/Wild_plants.tsx"/>
+ <tileset firstgid="836" source="../tilesets/Interior.tsx"/>
+ <layer id="1" name="Terreno" width="8" height="8">
+  <data encoding="csv">
+25,25,25,25,25,25,25,25,
+25,25,25,25,25,25,25,25,
+25,25,25,25,25,25,25,25,
+25,25,25,25,25,25,25,25,
+25,25,25,25,25,25,25,25,
+25,25,25,25,25,25,25,25,
+25,25,25,25,25,25,25,25,
+25,25,25,25,25,25,25,25
+</data>
+ </layer>
+ <layer id="2" name="Blocchi" width="8" height="8">
+  <data encoding="csv">
+464,474,474,474,474,474,474,465,
+469,0,0,0,0,0,0,467,
+469,519,520,0,0,865,866,467,
+469,0,0,0,0,0,0,467,
+469,0,0,0,0,0,0,467,
+469,932,932,0,0,0,0,467,
+469,936,937,0,0,0,0,467,
+470,462,462,0,0,462,462,471
+</data>
+ </layer>
+ <layer id="3" name="Blocchi2" width="8" height="8">
+  <data encoding="csv">
+0,497,498,0,0,841,842,0,
+0,508,509,0,0,853,854,0,
+0,0,0,0,0,0,0,0,
+0,0,0,0,0,0,0,0,
+0,920,920,0,0,0,0,0,
+0,924,925,0,0,0,0,0,
+0,0,0,0,0,0,0,0,
+0,0,0,0,0,0,0,0
+</data>
+ </layer>
+ <objectgroup id="5" name="Porte">
+  <properties>
+   <property name="destinazione" value="Mondo.tmx"/>
+   <property name="spawn_x" type="float" value="3"/>
+   <property name="spawn_y" type="float" value="42"/>
+  </properties>
+  <object id="1" x="63.5" y="118"/>
+  <object id="4" x="-31" y="192" width="1.5" height="0.5"/>
+ </objectgroup>
+ <layer id="4" name="Ponte" width="8" height="8">
+  <data encoding="csv">
+0,0,0,0,0,0,0,0,
+0,0,0,0,0,0,0,0,
+0,0,0,0,0,0,0,0,
+0,0,0,0,0,513,514,0,
+0,0,0,0,0,524,525,0,
+0,0,0,0,0,0,0,0,
+0,0,0,0,0,0,0,0,
+0,0,0,0,0,0,0,0
+</data>
+ </layer>
+</map>
