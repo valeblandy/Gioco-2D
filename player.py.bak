@@ -4,9 +4,9 @@ import xml.etree.ElementTree as ET
 from sprite_animato import SpriteAnimato
 
 # ── Percorsi base ─────────────────────────────────────────────────────────────
-BASE_DIR    = os.path.dirname(os.path.abspath(__file__))
-SPRITES_DIR = os.path.join(BASE_DIR, "assets", "sprites")
-MAPS_DIR    = os.path.join(BASE_DIR, "assets", "maps")
+BASE_DIR     = os.path.dirname(os.path.abspath(__file__))
+SPRITES_DIR  = os.path.join(BASE_DIR, "assets", "sprites")
+MAPS_DIR     = os.path.join(BASE_DIR, "assets", "maps")
 
 # ── Spritesheet ───────────────────────────────────────────────────────────────
 IDLE_SOURCE = os.path.join(SPRITES_DIR, "idle.png")
@@ -40,8 +40,9 @@ JUMP_HOLD_TIME = 0.25
 TILE_SIZE  = 16
 TILE_SCALE = 2.0
 
-# Altezza player in tile (scala automaticamente col tile_scale della mappa)
-PLAYER_TILE_HEIGHT = 2.0
+# Il player occupa circa 2 tile in altezza nella mappa base (TILE_SCALE=2 → 32px/tile)
+# FRAME_H=64px → scala base = (2 * TILE_SIZE * TILE_SCALE) / FRAME_H = 1.0
+PLAYER_TILE_HEIGHT = 2.0   # quante tile di altezza occupa il player
 
 COLLISION_LAYER   = "Blocchi"
 BACKGROUND_LAYERS = ["Terreno", "Ponte"]
@@ -51,12 +52,6 @@ FOREGROUND_LAYERS = ["Blocchi2"]
 MAPS = {
     "Mondo.tmx":     os.path.join(MAPS_DIR, "Mondo.tmx"),
     "interior1.tmx": os.path.join(MAPS_DIR, "interior1.tmx"),
-    "interior2.tmx": os.path.join(MAPS_DIR, "interior2.tmx"),
-    "interior3.tmx": os.path.join(MAPS_DIR, "interior3.tmx"),
-    "interior4.tmx": os.path.join(MAPS_DIR, "interior4.tmx"),
-    "interior5.tmx": os.path.join(MAPS_DIR, "interior5.tmx"),
-    "interior6.tmx": os.path.join(MAPS_DIR, "interior6.tmx"),
-    "interior7.tmx": os.path.join(MAPS_DIR, "interior7.tmx"),
 }
 
 # ── Schermo ───────────────────────────────────────────────────────────────────
@@ -72,8 +67,10 @@ class Player(SpriteAnimato):
     def __init__(self, scala=1.0):
         super().__init__(scala=scala)
         self._scala = scala
+        self._animazioni_caricate = False
 
     def carica_animazioni(self):
+        """Carica le animazioni con la scala corrente."""
         for i, d in enumerate(self.DIREZIONI):
             self.aggiungi_animazione(
                 nome=f"idle_{d}", percorso=IDLE_SOURCE,
@@ -101,6 +98,7 @@ class Player(SpriteAnimato):
                 durata=DURATA_JUMP, loop=False,
                 default=False, riga=i,
             )
+        self._animazioni_caricate = True
 
         self.direzione    = "giu"
         self.key_su       = False
@@ -116,10 +114,13 @@ class Player(SpriteAnimato):
         self._hold_timer = 0.0
 
     def aggiorna_scala(self, nuova_scala: float):
+        """Ricrea il player con una nuova scala."""
         self._scala = nuova_scala
         self.scale = nuova_scala
+        # Ricarica le texture con la nuova scala
         if hasattr(self, 'animazioni'):
             self.animazioni.clear()
+        self._animazioni_caricate = False
         self.carica_animazioni()
 
     def update_animation(self, delta_time=1/60):
@@ -151,6 +152,7 @@ class Player(SpriteAnimato):
             ultimo_frame = (anim and
                             self.indice_frame == len(anim["textures"]) - 1 and
                             not anim["loop"])
+
             if ultimo_frame:
                 if self._hold_timer < JUMP_HOLD_TIME:
                     self._hold_timer += delta_time
@@ -161,7 +163,7 @@ class Player(SpriteAnimato):
                 self._vel_y -= GRAVITY * delta_time
 
             self._offset_y += self._vel_y * delta_time
-            self.center_y   = self._base_y + self._offset_y
+            self.center_y  = self._base_y + self._offset_y
 
             if self._offset_y <= 0:
                 self._offset_y    = 0
@@ -237,7 +239,7 @@ class GameWindow(arcade.Window):
         tiles_w = int(root.get("width"))
         tiles_h = int(root.get("height"))
 
-        # Scale adattivo: interni piccoli (≤10 tile) riempiono lo schermo
+        # Scale adattivo per mappe piccole
         if tiles_w <= 10 and tiles_h <= 10:
             tile_scale = min(SCREEN_W / (tiles_w * TILE_SIZE),
                              SCREEN_H / (tiles_h * TILE_SIZE))
@@ -252,6 +254,7 @@ class GameWindow(arcade.Window):
         self.scene    = arcade.Scene.from_tilemap(self.tile_map)
 
         # Scala player proporzionale alla tile size corrente
+        # FRAME_H=64px, vogliamo che il player sia PLAYER_TILE_HEIGHT tile alto
         player_scala = (PLAYER_TILE_HEIGHT * TILE_SIZE * tile_scale) / FRAME_H
 
         if self.player is None:
@@ -275,66 +278,19 @@ class GameWindow(arcade.Window):
         self.player._vel_y       = 0.0
         self.player._offset_y    = 0.0
 
-        # ── Collisioni ────────────────────────────────────────────────────────
-        # Prende i tile di Blocchi, esclude quelli coperti da Ponte (es. ponti sull'acqua).
-        # FIX BUG ACQUA: il layer Terreno usa tile id=2 per l'acqua (tileset_terrain).
-        # Aggiungiamo quei tile come muri invisibili per bloccare il player.
         muri = arcade.SpriteList(use_spatial_hash=True)
-
-        ponte_pos = set()
-        if "Ponte" in self.scene._name_mapping:
-            ponte_pos = {
+        if (COLLISION_LAYER in self.scene._name_mapping and
+                "Ponte" in self.scene._name_mapping):
+            posizioni_ponte = {
                 (round(s.center_x), round(s.center_y))
                 for s in self.scene["Ponte"]
             }
-
-        if COLLISION_LAYER in self.scene._name_mapping:
             for sprite in self.scene[COLLISION_LAYER]:
                 pos = (round(sprite.center_x), round(sprite.center_y))
-                if pos not in ponte_pos:
+                if pos not in posizioni_ponte:
                     muri.append(sprite)
-
-        # Aggiunge l'acqua del Terreno come collisione
-        # tile id=2 in tileset_terrain = acqua (riga 0, col 1, 0-indexed)
-        if "Terreno" in self.scene._name_mapping:
-            for sprite in self.scene["Terreno"]:
-                # _tile_id non è sempre disponibile; usiamo la posizione:
-                # l'acqua si riconosce perché è nel set di posizioni Ponte
-                # oppure perché è tile 2 del primo tileset.
-                # Approccio robusto: blocca le tile d'acqua confrontando
-                # le coordinate con quelle del layer Terreno che hanno tile=2.
-                pass  # gestito sotto tramite custom_layer
-
-        # Approccio alternativo per il bug acqua:
-        # Leggiamo il TMX direttamente per trovare le celle con tile id=2 (acqua)
-        # e creiamo sprite di collisione invisibili in quelle posizioni.
-        try:
-            tmx_root = ET.parse(map_path).getroot()
-            for layer in tmx_root.findall("layer"):
-                if layer.get("name") == "Terreno":
-                    data = layer.find("data")
-                    if data is not None and data.get("encoding") == "csv":
-                        righe = [r.strip() for r in data.text.strip().split("\n") if r.strip()]
-                        for row_i, riga in enumerate(righe):
-                            for col_i, val in enumerate(riga.rstrip(",").split(",")):
-                                tile_id = int(val.strip())
-                                # tile 2 = acqua in tileset_terrain (firstgid=1)
-                                if tile_id == 2:
-                                    cx = (col_i + 0.5) * TILE_SIZE * tile_scale
-                                    cy = (tiles_h - row_i - 0.5) * TILE_SIZE * tile_scale
-                                    pos = (round(cx), round(cy))
-                                    # Aggiungi solo se non già coperto da ponte
-                                    if pos not in ponte_pos:
-                                        muro = arcade.SpriteSolidColor(
-                                            int(TILE_SIZE * tile_scale),
-                                            int(TILE_SIZE * tile_scale),
-                                            arcade.color.TRANSPARENT_BLACK
-                                        )
-                                        muro.center_x = cx
-                                        muro.center_y = cy
-                                        muri.append(muro)
-        except Exception as e:
-            print(f"[WARN] bug acqua fix: {e}")
+        elif COLLISION_LAYER in self.scene._name_mapping:
+            muri = self.scene[COLLISION_LAYER]
 
         self.physics_engine = arcade.PhysicsEngineSimple(self.player, muri)
 
@@ -342,7 +298,7 @@ class GameWindow(arcade.Window):
         self._transizione_pendente = None
         self._cooldown_porta       = 0.0
 
-        # Reset camera al player
+        # Resetta camera
         if self._a3:
             cx = max(SCREEN_W / 2, min(self.map_width  - SCREEN_W / 2, self.player.center_x))
             cy = max(SCREEN_H / 2, min(self.map_height - SCREEN_H / 2, self.player.center_y))
