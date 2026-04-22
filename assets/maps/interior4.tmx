@@ -1,74 +1,62 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<map version="1.10" tiledversion="1.12.0" orientation="orthogonal" renderorder="right-down" width="8" height="8" tilewidth="16" tileheight="16" infinite="0" nextlayerid="6" nextobjectid="6">
- <tileset firstgid="1" source="../tilesets/Pixel 16 v2 village free.tsx"/>
- <tileset firstgid="290" source="../tilesets/Anvil.tsx"/>
- <tileset firstgid="292" source="../tilesets/Chest.tsx"/>
- <tileset firstgid="324" source="../tilesets/Door.tsx"/>
- <tileset firstgid="334" source="../tilesets/Fence.tsx"/>
- <tileset firstgid="359" source="../tilesets/Ground.tsx"/>
- <tileset firstgid="407" source="../tilesets/House.tsx"/>
- <tileset firstgid="455" source="../tilesets/Interior_build.tsx"/>
- <tileset firstgid="485" source="../tilesets/Interior_decor.tsx"/>
- <tileset firstgid="584" source="../tilesets/Rock_hills.tsx"/>
- <tileset firstgid="620" source="../tilesets/Rocks_and_bush.tsx"/>
- <tileset firstgid="632" source="../tilesets/Trees.tsx"/>
- <tileset firstgid="736" source="../tilesets/Water.tsx"/>
- <tileset firstgid="808" source="../tilesets/Wild_plants.tsx"/>
- <tileset firstgid="836" source="../tilesets/Interior.tsx"/>
- <layer id="1" name="Terreno" width="8" height="8">
+<map version="1.10" tiledversion="1.12.0" orientation="orthogonal" renderorder="right-down" width="12" height="8" tilewidth="16" tileheight="16" infinite="0" nextlayerid="6" nextobjectid="2">
+ <tileset firstgid="1" source="../tilesets/Interior_build.tsx"/>
+ <tileset firstgid="31" source="../tilesets/Interior_decor.tsx"/>
+ <tileset firstgid="130" source="../tilesets/Interior.tsx"/>
+ <layer id="1" name="Terreno" width="12" height="8">
   <data encoding="csv">
-25,25,25,25,25,25,25,25,
-25,25,25,25,25,25,25,25,
-25,25,25,25,25,25,25,25,
-25,25,25,25,25,25,25,25,
-25,25,25,25,25,25,25,25,
-25,25,25,25,25,25,25,25,
-25,25,25,25,25,25,25,25,
-25,25,25,25,25,25,25,25
+3221225495,3221225495,3221225495,3221225495,3221225495,3221225495,3221225495,3221225495,3221225495,3221225495,3221225495,3221225495,
+3221225495,3221225495,3221225495,3221225495,3221225495,3221225495,3221225495,3221225495,3221225495,3221225495,3221225495,3221225495,
+3221225495,3221225495,3221225495,3221225495,3221225495,3221225495,3221225495,3221225495,3221225495,3221225495,3221225495,3221225495,
+3221225495,3221225495,3221225495,3221225495,3221225495,3221225495,3221225495,3221225495,3221225495,3221225495,3221225495,3221225495,
+3221225495,3221225495,3221225495,3221225495,3221225495,3221225495,3221225495,3221225495,3221225495,3221225495,3221225495,3221225495,
+3221225495,3221225495,3221225495,3221225495,3221225495,3221225495,3221225495,3221225495,3221225495,3221225495,3221225495,3221225495,
+3221225495,3221225495,3221225495,3221225495,3221225495,3221225495,3221225495,3221225495,3221225495,3221225495,3221225495,3221225495,
+3221225495,3221225495,3221225495,3221225495,3221225495,3221225495,3221225495,3221225495,3221225495,3221225495,3221225495,3221225495
 </data>
  </layer>
- <layer id="2" name="Blocchi" width="8" height="8">
+ <layer id="2" name="Blocchi" width="12" height="8">
   <data encoding="csv">
-464,474,474,474,474,474,474,465,
-469,0,0,0,0,0,0,467,
-469,0,0,0,0,0,0,467,
-469,0,0,0,0,0,0,467,
-469,0,0,0,0,0,0,467,
-469,0,0,0,0,0,0,467,
-469,0,0,0,0,0,0,467,
-470,462,462,0,0,462,462,471
+10,20,20,20,20,20,20,20,20,20,20,11,
+15,226,226,0,0,226,226,0,0,0,0,13,
+15,230,231,0,0,230,231,0,0,115,116,13,
+15,0,0,226,226,0,0,226,226,0,0,13,
+15,0,0,230,231,0,0,230,231,0,0,13,
+15,226,226,0,0,226,226,0,0,89,90,13,
+15,230,231,0,0,230,231,0,0,0,0,13,
+16,8,8,8,8,8,8,8,8,0,0,17
 </data>
  </layer>
- <layer id="3" name="Blocchi2" width="8" height="8">
+ <layer id="3" name="Blocchi2" width="12" height="8">
   <data encoding="csv">
-0,0,0,0,0,0,0,0,
-0,0,0,0,0,0,0,0,
-0,0,0,0,0,0,0,0,
-0,0,0,0,0,0,0,0,
-0,0,0,0,0,0,0,0,
-0,0,0,0,0,0,0,0,
-0,0,0,0,0,0,0,0,
-0,0,0,0,0,0,0,0
+0,214,214,0,0,214,214,0,0,82,83,0,
+0,218,219,0,0,218,219,0,0,93,94,0,
+0,0,0,214,214,0,0,214,214,0,0,0,
+0,0,0,218,219,0,0,218,219,0,0,0,
+0,214,214,0,0,214,214,0,0,78,79,0,
+0,218,219,0,0,218,219,0,0,0,0,0,
+0,0,0,0,0,0,0,0,0,0,0,0,
+0,0,0,0,0,0,0,0,0,0,0,0
 </data>
  </layer>
- <objectgroup id="5" name="Porte">
+ <layer id="4" name="Ponte" width="12" height="8">
+  <data encoding="csv">
+0,0,0,0,0,0,0,0,0,0,0,0,
+0,0,0,0,0,0,0,0,0,0,0,0,
+0,0,0,0,0,0,0,0,0,0,0,0,
+0,0,0,0,0,0,0,0,0,0,0,0,
+0,0,0,0,0,0,0,0,0,0,0,0,
+0,0,0,0,0,0,0,0,0,0,0,0,
+0,0,0,0,0,0,0,0,0,0,0,0,
+0,0,0,0,0,0,0,0,0,0,0,0
+</data>
+ </layer>
+ <objectgroup id="99" name="Porte">
   <properties>
    <property name="destinazione" value="Mondo.tmx"/>
    <property name="spawn_x" type="float" value="20"/>
    <property name="spawn_y" type="float" value="15"/>
   </properties>
-  <object id="5" x="32" y="112" width="64" height="16"/>
+  <object id="99" x="141.75" y="112" width="36.5" height="16"/>
  </objectgroup>
- <layer id="4" name="Ponte" width="8" height="8">
-  <data encoding="csv">
-0,0,0,0,0,0,0,0,
-0,0,0,0,0,0,0,0,
-0,0,0,0,0,0,0,0,
-0,0,0,0,0,0,0,0,
-0,0,0,0,0,0,0,0,
-0,0,0,0,0,0,0,0,
-0,0,0,0,0,0,0,0,
-0,0,0,0,0,0,0,0
-</data>
- </layer>
 </map>

@@ -1,41 +1,41 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <map version="1.10" tiledversion="1.12.0" orientation="orthogonal" renderorder="right-down" width="50" height="50" tilewidth="16" tileheight="16" infinite="0" nextlayerid="21" nextobjectid="9">
- <tileset firstgid="1" source="../tileset_terrain.tsx"/>
- <tileset firstgid="97" source="../tileset_objects.tsx"/>
- <tileset firstgid="273" source="../Pixel 16 v2 village free.tsx"/>
- <tileset firstgid="562" source="The Fan-tasy Tileset (Free) 1.5.7/The Fan-tasy Tileset (Free)/Tiled/Tilesets/Tileset_RockSlope_Simple.tsx"/>
- <tileset firstgid="616" source="The Fan-tasy Tileset (Free) 1.5.7/The Fan-tasy Tileset (Free)/Tiled/Tilesets/Objects_Trees.tsx"/>
- <tileset firstgid="627" source="The Fan-tasy Tileset (Free) 1.5.7/The Fan-tasy Tileset (Free)/Tiled/Tilesets/Objects_Rocks.tsx"/>
- <tileset firstgid="632" source="The Fan-tasy Tileset (Free) 1.5.7/The Fan-tasy Tileset (Free)/Tiled/Tilesets/Objects_Shadows.tsx"/>
- <tileset firstgid="734" source="The Fan-tasy Tileset (Free) 1.5.7/The Fan-tasy Tileset (Free)/Tiled/Tilesets/Animation_Campfire.tsx"/>
- <tileset firstgid="766" source="The Fan-tasy Tileset (Free) 1.5.7/The Fan-tasy Tileset (Free)/Tiled/Tilesets/Tileset_Ground.tsx"/>
- <tileset firstgid="934" source="The Fan-tasy Tileset (Free) 1.5.7/The Fan-tasy Tileset (Free)/Tiled/Tilesets/Tileset_RockSlope.tsx"/>
- <tileset firstgid="5030" source="The Fan-tasy Tileset (Free) 1.5.7/The Fan-tasy Tileset (Free)/Tiled/Tilesets/Tileset_Water.tsx"/>
- <tileset firstgid="5342" source="The Fan-tasy Tileset (Free) 1.5.7/The Fan-tasy Tileset (Free)/Tiled/Tilesets/Tilesets_Road.tsx"/>
- <tileset firstgid="5426" source="The Fan-tasy Tileset (Free) 1.5.7/The Fan-tasy Tileset (Free)/Tiled/Tilesets/Animation_Flowers_Red.tsx"/>
- <tileset firstgid="5522" source="The Fan-tasy Tileset (Free) 1.5.7/The Fan-tasy Tileset (Free)/Tiled/Tilesets/Atlas_Buildings.tsx"/>
- <tileset firstgid="5998" source="The Fan-tasy Tileset (Free) 1.5.7/The Fan-tasy Tileset (Free)/Tiled/Tilesets/Atlas_Props.tsx"/>
- <tileset firstgid="6178" source="The Fan-tasy Tileset (Free) 1.5.7/The Fan-tasy Tileset (Free)/Tiled/Tilesets/Tileset_Shadow.tsx"/>
- <tileset firstgid="6226" source="The Fan-tasy Tileset (Free) 1.5.7/The Fan-tasy Tileset (Free)/Tiled/Tilesets/Objects_Buildings.tsx"/>
- <tileset firstgid="6232" source="The Fan-tasy Tileset (Free) 1.5.7/The Fan-tasy Tileset (Free)/Tiled/Tilesets/Objects_Props.tsx"/>
- <tileset firstgid="6251" source="The Fan-tasy Tileset (Free) 1.5.7/The Fan-tasy Tileset (Free)/Tiled/Tilesets/Atlas_Rocks.tsx"/>
- <tileset firstgid="6273" source="The Fan-tasy Tileset (Free) 1.5.7/The Fan-tasy Tileset (Free)/Tiled/Tilesets/Atlas_Trees_Bushes.tsx"/>
- <tileset firstgid="6417" source="The Fan-tasy Tileset (Free) 1.5.7/The Fan-tasy Tileset (Free)/Tiled/Tilesets/Animation_Flowers_White.tsx"/>
- <tileset firstgid="6513" source="Water.tsx"/>
- <tileset firstgid="6585" source="Trees.tsx"/>
- <tileset firstgid="6689" source="Rocks_and_bush.tsx"/>
- <tileset firstgid="6701" source="Rock_hills.tsx"/>
- <tileset firstgid="6737" source="Interior_decor.tsx"/>
- <tileset firstgid="6836" source="Interior_build.tsx"/>
- <tileset firstgid="6866" source="House.tsx"/>
- <tileset firstgid="6914" source="Ground.tsx"/>
- <tileset firstgid="6962" source="Fence.tsx"/>
- <tileset firstgid="6987" source="Door.tsx"/>
- <tileset firstgid="6997" source="Chest.tsx"/>
- <tileset firstgid="7029" source="Cat_B_and_W_walking_free.tsx"/>
- <tileset firstgid="7033" source="Anvil.tsx"/>
- <tileset firstgid="7035" source="Interior.tsx"/>
- <tileset firstgid="7143" source="Wild_plants.tsx"/>
+ <tileset firstgid="1" source="../tilesets/tileset_terrain.tsx"/>
+ <tileset firstgid="97" source="../tilesets/tileset_objects.tsx"/>
+ <tileset firstgid="273" source="../tilesets/Pixel 16 v2 village free.tsx"/>
+ <tileset firstgid="562" source="../tilesets/The Fan-tasy Tileset (Free) 1.5.7/The Fan-tasy Tileset (Free)/Tiled/Tilesets/Tileset_RockSlope_Simple.tsx"/>
+ <tileset firstgid="616" source="../tilesets/The Fan-tasy Tileset (Free) 1.5.7/The Fan-tasy Tileset (Free)/Tiled/Tilesets/Objects_Trees.tsx"/>
+ <tileset firstgid="627" source="../tilesets/The Fan-tasy Tileset (Free) 1.5.7/The Fan-tasy Tileset (Free)/Tiled/Tilesets/Objects_Rocks.tsx"/>
+ <tileset firstgid="632" source="../tilesets/The Fan-tasy Tileset (Free) 1.5.7/The Fan-tasy Tileset (Free)/Tiled/Tilesets/Objects_Shadows.tsx"/>
+ <tileset firstgid="734" source="../tilesets/The Fan-tasy Tileset (Free) 1.5.7/The Fan-tasy Tileset (Free)/Tiled/Tilesets/Animation_Campfire.tsx"/>
+ <tileset firstgid="766" source="../tilesets/The Fan-tasy Tileset (Free) 1.5.7/The Fan-tasy Tileset (Free)/Tiled/Tilesets/Tileset_Ground.tsx"/>
+ <tileset firstgid="934" source="../tilesets/The Fan-tasy Tileset (Free) 1.5.7/The Fan-tasy Tileset (Free)/Tiled/Tilesets/Tileset_RockSlope.tsx"/>
+ <tileset firstgid="5030" source="../tilesets/The Fan-tasy Tileset (Free) 1.5.7/The Fan-tasy Tileset (Free)/Tiled/Tilesets/Tileset_Water.tsx"/>
+ <tileset firstgid="5342" source="../tilesets/The Fan-tasy Tileset (Free) 1.5.7/The Fan-tasy Tileset (Free)/Tiled/Tilesets/Tilesets_Road.tsx"/>
+ <tileset firstgid="5426" source="../tilesets/The Fan-tasy Tileset (Free) 1.5.7/The Fan-tasy Tileset (Free)/Tiled/Tilesets/Animation_Flowers_Red.tsx"/>
+ <tileset firstgid="5522" source="../tilesets/The Fan-tasy Tileset (Free) 1.5.7/The Fan-tasy Tileset (Free)/Tiled/Tilesets/Atlas_Buildings.tsx"/>
+ <tileset firstgid="5998" source="../tilesets/The Fan-tasy Tileset (Free) 1.5.7/The Fan-tasy Tileset (Free)/Tiled/Tilesets/Atlas_Props.tsx"/>
+ <tileset firstgid="6178" source="../tilesets/The Fan-tasy Tileset (Free) 1.5.7/The Fan-tasy Tileset (Free)/Tiled/Tilesets/Tileset_Shadow.tsx"/>
+ <tileset firstgid="6226" source="../tilesets/The Fan-tasy Tileset (Free) 1.5.7/The Fan-tasy Tileset (Free)/Tiled/Tilesets/Objects_Buildings.tsx"/>
+ <tileset firstgid="6232" source="../tilesets/The Fan-tasy Tileset (Free) 1.5.7/The Fan-tasy Tileset (Free)/Tiled/Tilesets/Objects_Props.tsx"/>
+ <tileset firstgid="6251" source="../tilesets/The Fan-tasy Tileset (Free) 1.5.7/The Fan-tasy Tileset (Free)/Tiled/Tilesets/Atlas_Rocks.tsx"/>
+ <tileset firstgid="6273" source="../tilesets/The Fan-tasy Tileset (Free) 1.5.7/The Fan-tasy Tileset (Free)/Tiled/Tilesets/Atlas_Trees_Bushes.tsx"/>
+ <tileset firstgid="6417" source="../tilesets/The Fan-tasy Tileset (Free) 1.5.7/The Fan-tasy Tileset (Free)/Tiled/Tilesets/Animation_Flowers_White.tsx"/>
+ <tileset firstgid="6513" source="../tilesets/Water.tsx"/>
+ <tileset firstgid="6585" source="../tilesets/Trees.tsx"/>
+ <tileset firstgid="6689" source="../tilesets/Rocks_and_bush.tsx"/>
+ <tileset firstgid="6701" source="../tilesets/Rock_hills.tsx"/>
+ <tileset firstgid="6737" source="../tilesets/Interior_decor.tsx"/>
+ <tileset firstgid="6836" source="../tilesets/Interior_build.tsx"/>
+ <tileset firstgid="6866" source="../tilesets/House.tsx"/>
+ <tileset firstgid="6914" source="../tilesets/Ground.tsx"/>
+ <tileset firstgid="6962" source="../tilesets/Fence.tsx"/>
+ <tileset firstgid="6987" source="../tilesets/Door.tsx"/>
+ <tileset firstgid="6997" source="../tilesets/Chest.tsx"/>
+ <tileset firstgid="7029" source="../tilesets/Cat_B_and_W_walking_free.tsx"/>
+ <tileset firstgid="7033" source="../tilesets/Anvil.tsx"/>
+ <tileset firstgid="7035" source="../tilesets/Interior.tsx"/>
+ <tileset firstgid="7143" source="../tilesets/Wild_plants.tsx"/>
  <layer id="1" name="Terreno" width="50" height="50">
   <data encoding="csv">
 1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,
